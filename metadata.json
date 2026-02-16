@@ -1,0 +1,7 @@
+{
+  "name": "KalorickéAI",
+  "description": "Inteligentní počítadlo kalorií využívající AI pro snadný odhad nutričních hodnot z textu. Extrémně detailní analýza, extrémně jednoduché ovládání.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
