@@ -30,6 +30,9 @@ export const AddFoodModal: React.FC<AddFoodModalProps> = ({ isOpen, onClose, onA
     protein_g: 0,
     carbs_g: 0,
     fat_g: 0,
+    fiber_g: 0,
+    sugar_g: 0,
+    saturated_fat_g: 0,
     confidence_score: 1
   });
   const [mealType, setMealType] = useState<MealType>(MealType.BREAKFAST);
@@ -52,9 +55,11 @@ export const AddFoodModal: React.FC<AddFoodModalProps> = ({ isOpen, onClose, onA
       protein_g: 0,
       carbs_g: 0,
       fat_g: 0,
+      fiber_g: 0,
+      sugar_g: 0,
+      saturated_fat_g: 0,
       confidence_score: 1
     });
-    // Don't reset mealType here, keep it sticky or based on what was passed
   };
 
   const handleTextAnalyze = async () => {
@@ -100,6 +105,9 @@ export const AddFoodModal: React.FC<AddFoodModalProps> = ({ isOpen, onClose, onA
         protein_g: 0,
         carbs_g: 0,
         fat_g: 0,
+        fiber_g: 0,
+        sugar_g: 0,
+        saturated_fat_g: 0,
         confidence_score: 1
     });
   }
@@ -112,6 +120,9 @@ export const AddFoodModal: React.FC<AddFoodModalProps> = ({ isOpen, onClose, onA
       protein: Number(formData.protein_g),
       carbs: Number(formData.carbs_g),
       fat: Number(formData.fat_g),
+      fiber: Number(formData.fiber_g || 0),
+      sugar: Number(formData.sugar_g || 0),
+      saturatedFat: Number(formData.saturated_fat_g || 0),
       mealType: mealType
     });
     reset();
@@ -241,25 +252,6 @@ export const AddFoodModal: React.FC<AddFoodModalProps> = ({ isOpen, onClose, onA
                         placeholder="Např. 1 miska"
                     />
                 </div>
-
-                <div>
-                    <label className="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">Typ jídla</label>
-                    <div className="flex gap-2 overflow-x-auto pb-1">
-                        {Object.values(MealType).map((type) => (
-                        <button
-                            key={type}
-                            onClick={() => setMealType(type)}
-                            className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${
-                            mealType === type 
-                            ? 'bg-emerald-100 text-emerald-700 border border-emerald-200 dark:bg-emerald-900/40 dark:text-emerald-300 dark:border-emerald-800' 
-                            : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700'
-                            }`}
-                        >
-                            {type}
-                        </button>
-                        ))}
-                    </div>
-                </div>
               </div>
 
               {/* Macros Grid */}
@@ -304,6 +296,26 @@ export const AddFoodModal: React.FC<AddFoodModalProps> = ({ isOpen, onClose, onA
                         />
                     </div>
                 </div>
+                
+                {/* Advanced Metrics */}
+                <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                    <p className="text-xs font-bold text-gray-400 uppercase mb-2">Podrobnosti (volitelné)</p>
+                    <div className="grid grid-cols-3 gap-3">
+                        <div>
+                            <label className="text-xs text-center text-gray-500 dark:text-gray-400 block mb-1">Vláknina</label>
+                            <input type="number" value={formData.fiber_g || 0} onChange={(e) => setFormData({...formData, fiber_g: Number(e.target.value)})} className="w-full p-1.5 text-center text-sm bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg outline-none" />
+                        </div>
+                        <div>
+                            <label className="text-xs text-center text-gray-500 dark:text-gray-400 block mb-1">Cukry</label>
+                            <input type="number" value={formData.sugar_g || 0} onChange={(e) => setFormData({...formData, sugar_g: Number(e.target.value)})} className="w-full p-1.5 text-center text-sm bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg outline-none" />
+                        </div>
+                        <div>
+                            <label className="text-xs text-center text-gray-500 dark:text-gray-400 block mb-1">Nas. Tuky</label>
+                            <input type="number" value={formData.saturated_fat_g || 0} onChange={(e) => setFormData({...formData, saturated_fat_g: Number(e.target.value)})} className="w-full p-1.5 text-center text-sm bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg outline-none" />
+                        </div>
+                    </div>
+                </div>
+
               </div>
 
               <div className="flex gap-3 pt-2">

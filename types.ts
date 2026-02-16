@@ -20,14 +20,20 @@ export enum UserGoal {
   GAIN = 'gain'            // +250 kcal
 }
 
+export interface WeightRecord {
+  date: string; // YYYY-MM-DD
+  weight: number;
+}
+
 export interface UserProfile {
   age: number;
-  weight: number; // kg
+  weight: number; // kg (current)
   height: number; // cm
   gender: 'male' | 'female';
   activity: ActivityLevel;
   goal: UserGoal;
   isConfigured: boolean;
+  weightHistory: WeightRecord[];
 }
 
 export interface Nutrients {
@@ -35,6 +41,9 @@ export interface Nutrients {
   protein: number;
   carbs: number;
   fat: number;
+  fiber: number;
+  sugar: number;
+  saturatedFat: number;
 }
 
 export interface FoodItem extends Nutrients {
@@ -50,6 +59,9 @@ export interface DayStats extends Nutrients {
   goalProtein: number;
   goalCarbs: number;
   goalFat: number;
+  goalFiber: number;
+  goalSugar: number;
+  goalSaturatedFat: number;
 }
 
 export interface AIAnalysisResult {
@@ -59,6 +71,9 @@ export interface AIAnalysisResult {
   protein_g: number;
   carbs_g: number;
   fat_g: number;
+  fiber_g: number;
+  sugar_g: number;
+  saturated_fat_g: number;
   confidence_score: number; // 0-1
 }
 

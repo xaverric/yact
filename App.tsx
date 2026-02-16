@@ -5,7 +5,8 @@ import { AddFoodModal } from './components/AddFoodModal';
 import { CalendarHeader } from './components/CalendarHeader';
 import { MonthCalendar } from './components/MonthCalendar';
 import { SettingsModal } from './components/SettingsModal';
-import { FoodItem, DayStats, MealType, UserProfile, MealSuggestion } from './types';
+import { NutrientDetailModal } from './components/NutrientDetailModal';
+import { FoodItem, DayStats, MealType, UserProfile, MealSuggestion, ActivityLevel, UserGoal } from './types';
 import { DEFAULT_GOALS, MEAL_ORDER } from './constants';
 import { Plus, Bot, Settings, ChefHat, Check, ArrowRight, Utensils } from 'lucide-react';
 import { suggestMealPlan } from './services/geminiService';
@@ -24,6 +25,9 @@ const App: React.FC = () => {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   
+  // Nutrient Modal State
+  const [detailNutrient, setDetailNutrient] = useState<'protein' | 'carbs' | 'fat' | null>(null);
+
   // AI Suggestions State
   const [aiSuggestions, setAiSuggestions] = useState<MealSuggestion[]>([]);
   const [loadingSuggestion, setLoadingSuggestion] = useState(false);
@@ -52,9 +56,15 @@ const App: React.FC = () => {
   // Initialization
   useEffect(() => {
     const loadedProfile = getUserProfile();
-    setUserProfile(loadedProfile);
-    if (!loadedProfile) {
-      setIsSettingsOpen(true);
+    if (loadedProfile) {
+        // Migration support for older profiles without weightHistory
+        if (!loadedProfile.weightHistory) {
+            loadedProfile.weightHistory = [];
+        }
+        setUserProfile(loadedProfile);
+    } else {
+        // Default empty profile triggers modal
+        setIsSettingsOpen(true);
     }
   }, []);
 
@@ -83,18 +93,30 @@ const App: React.FC = () => {
         protein: acc.protein + item.protein,
         carbs: acc.carbs + item.carbs,
         fat: acc.fat + item.fat,
+        fiber: acc.fiber + (item.fiber || 0),
+        sugar: acc.sugar + (item.sugar || 0),
+        saturatedFat: acc.saturatedFat + (item.saturatedFat || 0),
       }),
-      { calories: 0, protein: 0, carbs: 0, fat: 0 }
+      { calories: 0, protein: 0, carbs: 0, fat: 0, fiber: 0, sugar: 0, saturatedFat: 0 }
     );
     
-    const goals = userProfile ? calculateGoals(userProfile) : DEFAULT_GOALS;
+    // Fallback if profile not loaded yet
+    const safeProfile: UserProfile = userProfile || {
+        age: 30, weight: 70, height: 175, gender: 'male', 
+        activity: ActivityLevel.MODERATE, goal: UserGoal.MAINTAIN, isConfigured: false, weightHistory: []
+    };
+    
+    const goals = calculateGoals(safeProfile);
     
     return { 
       ...current,
       goalCalories: goals.goalCalories,
       goalProtein: goals.goalProtein,
       goalCarbs: goals.goalCarbs,
-      goalFat: goals.goalFat
+      goalFat: goals.goalFat,
+      goalFiber: goals.goalFiber,
+      goalSugar: goals.goalSugar,
+      goalSaturatedFat: goals.goalSaturatedFat
     };
   }, [items, userProfile]);
 
@@ -103,6 +125,9 @@ const App: React.FC = () => {
       ...item,
       id: crypto.randomUUID(),
       timestamp: Date.now(),
+      fiber: item.fiber || 0,
+      sugar: item.sugar || 0,
+      saturatedFat: item.saturatedFat || 0
     };
     setItems((prev) => [...prev, newItem]);
   };
@@ -132,13 +157,64 @@ const App: React.FC = () => {
           protein: s.protein,
           carbs: s.carbs,
           fat: s.fat,
-          mealType: suggestionType
+          mealType: suggestionType,
+          fiber: 0, // AI suggestions currently don't return these detailed macros, defaults to 0
+          sugar: 0,
+          saturatedFat: 0
       });
       // Optional: Clear suggestions or show success feedback
       setAiSuggestions([]);
   }
 
   const isToday = new Date().toDateString() === selectedDate.toDateString();
+
+  // Config for Nutrient Modal
+  const getModalConfig = () => {
+      if (!detailNutrient) return null;
+      switch(detailNutrient) {
+          case 'protein':
+              return {
+                  title: 'Bílkoviny',
+                  current: stats.protein,
+                  goal: stats.goalProtein,
+                  unit: 'g',
+                  color: 'bg-emerald-500',
+                  items: items,
+                  nutrientKey: 'protein' as keyof FoodItem,
+                  subMetrics: []
+              };
+          case 'carbs':
+              return {
+                  title: 'Sacharidy',
+                  current: stats.carbs,
+                  goal: stats.goalCarbs,
+                  unit: 'g',
+                  color: 'bg-blue-500',
+                  items: items,
+                  nutrientKey: 'carbs' as keyof FoodItem,
+                  subMetrics: [
+                      { label: 'Cukry', current: stats.sugar, goal: stats.goalSugar, color: 'bg-orange-400' },
+                      { label: 'Vláknina', current: stats.fiber, goal: stats.goalFiber, color: 'bg-green-600' }
+                  ]
+              };
+          case 'fat':
+              return {
+                  title: 'Tuky',
+                  current: stats.fat,
+                  goal: stats.goalFat,
+                  unit: 'g',
+                  color: 'bg-amber-500',
+                  items: items,
+                  nutrientKey: 'fat' as keyof FoodItem,
+                  subMetrics: [
+                      { label: 'Nasycené tuky', current: stats.saturatedFat, goal: stats.goalSaturatedFat, color: 'bg-red-500' }
+                  ]
+              };
+      }
+      return null;
+  }
+  
+  const modalConfig = getModalConfig();
 
   return (
     <div className="min-h-screen bg-[#F8F9FB] dark:bg-gray-950 pb-24 md:pb-10 transition-colors">
@@ -178,7 +254,10 @@ const App: React.FC = () => {
 
         {/* Progress Section */}
         <section>
-          <DailyProgress stats={stats} />
+          <DailyProgress 
+            stats={stats} 
+            onOpenDetail={(type) => setDetailNutrient(type)} 
+          />
         </section>
 
         {/* AI Assistant Banner (Only visible if goals are set) */}
@@ -323,6 +402,15 @@ const App: React.FC = () => {
         onAdd={handleAddFood}
         defaultMealType={selectedMealType}
       />
+
+      {/* Nutrient Detail Modal */}
+      {modalConfig && (
+        <NutrientDetailModal 
+            isOpen={!!detailNutrient}
+            onClose={() => setDetailNutrient(null)}
+            {...modalConfig}
+        />
+      )}
 
       <SettingsModal
         isOpen={isSettingsOpen}

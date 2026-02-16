@@ -12,16 +12,19 @@ const RESPONSE_SCHEMA = {
     protein_g: { type: Type.NUMBER, description: "Bílkoviny v gramech" },
     carbs_g: { type: Type.NUMBER, description: "Sacharidy v gramech" },
     fat_g: { type: Type.NUMBER, description: "Tuky v gramech" },
+    fiber_g: { type: Type.NUMBER, description: "Vláknina v gramech" },
+    sugar_g: { type: Type.NUMBER, description: "Cukry v gramech" },
+    saturated_fat_g: { type: Type.NUMBER, description: "Nasycené mastné kyseliny v gramech" },
     confidence_score: { type: Type.NUMBER, description: "Jistota modelu (0.0 až 1.0)" }
   },
-  required: ["food_name", "calories", "protein_g", "carbs_g", "fat_g", "confidence_score"],
+  required: ["food_name", "calories", "protein_g", "carbs_g", "fat_g", "fiber_g", "sugar_g", "saturated_fat_g", "confidence_score"],
 };
 
 export const analyzeFoodText = async (text: string): Promise<AIAnalysisResult | null> => {
   try {
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
-      contents: `Analyzuj následující text popisující jídlo a odhadni nutriční hodnoty co nejpřesněji.
+      contents: `Analyzuj následující text popisující jídlo a odhadni nutriční hodnoty co nejpřesněji, včetně vlákniny, cukrů a nasycených tuků.
       Text: "${text}"
       
       Pokud text nedává smysl jako jídlo, vrať JSON s null hodnotami nebo nízkým confidence_score.
@@ -47,7 +50,7 @@ export const analyzeFoodImage = async (base64Image: string): Promise<AIAnalysisR
       contents: {
         parts: [
           { inlineData: { mimeType: 'image/jpeg', data: base64Image } },
-          { text: "Identifikuj jídlo na obrázku a odhadni jeho nutriční hodnoty (kalorie, proteiny, sacharidy, tuky) pro celou porci, kterou vidíš. Odpověz v češtině formou JSON." }
+          { text: "Identifikuj jídlo na obrázku a odhadni jeho nutriční hodnoty (kalorie, proteiny, sacharidy, tuky, vláknina, cukry, nasycené tuky) pro celou porci, kterou vidíš. Odpověz v češtině formou JSON." }
         ]
       },
       config: {

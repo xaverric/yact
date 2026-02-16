@@ -6,9 +6,10 @@ import { Flame, Beef, Wheat, Droplets } from 'lucide-react';
 
 interface DailyProgressProps {
   stats: DayStats;
+  onOpenDetail: (type: 'protein' | 'carbs' | 'fat') => void;
 }
 
-export const DailyProgress: React.FC<DailyProgressProps> = ({ stats }) => {
+export const DailyProgress: React.FC<DailyProgressProps> = ({ stats, onOpenDetail }) => {
   const remaining = Math.max(0, stats.goalCalories - stats.calories);
   
   const data = [
@@ -70,21 +71,21 @@ export const DailyProgress: React.FC<DailyProgressProps> = ({ stats }) => {
                     </div>
                     <div className="text-lg font-bold text-gray-800 dark:text-gray-100">{Math.round(stats.calories)}</div>
                  </div>
-                 <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-xl transition-colors">
+                 <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-xl transition-colors cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700" onClick={() => onOpenDetail('protein')}>
                     <div className="flex items-center gap-1.5 mb-1 text-emerald-600 dark:text-emerald-400">
                         <Beef size={14} />
                         <span className="text-xs font-bold uppercase">Bílkoviny</span>
                     </div>
                     <div className="text-lg font-bold text-gray-800 dark:text-gray-100">{Math.round(stats.protein)}g</div>
                  </div>
-                 <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-xl transition-colors">
+                 <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-xl transition-colors cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700" onClick={() => onOpenDetail('carbs')}>
                     <div className="flex items-center gap-1.5 mb-1 text-blue-500 dark:text-blue-400">
                         <Wheat size={14} />
                         <span className="text-xs font-bold uppercase">Sacharidy</span>
                     </div>
                     <div className="text-lg font-bold text-gray-800 dark:text-gray-100">{Math.round(stats.carbs)}g</div>
                  </div>
-                 <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-xl transition-colors">
+                 <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-xl transition-colors cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700" onClick={() => onOpenDetail('fat')}>
                     <div className="flex items-center gap-1.5 mb-1 text-amber-500 dark:text-amber-400">
                         <Droplets size={14} />
                         <span className="text-xs font-bold uppercase">Tuky</span>
@@ -104,6 +105,7 @@ export const DailyProgress: React.FC<DailyProgressProps> = ({ stats }) => {
             unit="g" 
             color="bg-emerald-500"
             icon={<Beef size={16}/>}
+            onClick={() => onOpenDetail('protein')}
         />
         <NutritionCard 
             label="Sacharidy" 
@@ -112,6 +114,7 @@ export const DailyProgress: React.FC<DailyProgressProps> = ({ stats }) => {
             unit="g" 
             color="bg-blue-500"
             icon={<Wheat size={16}/>}
+            onClick={() => onOpenDetail('carbs')}
         />
         <NutritionCard 
             label="Tuky" 
@@ -120,6 +123,7 @@ export const DailyProgress: React.FC<DailyProgressProps> = ({ stats }) => {
             unit="g" 
             color="bg-amber-500"
             icon={<Droplets size={16}/>}
+            onClick={() => onOpenDetail('fat')}
         />
         <NutritionCard 
             label="Kalorie" 

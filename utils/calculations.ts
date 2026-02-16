@@ -25,16 +25,21 @@ export const calculateGoals = (profile: UserProfile): DayStats => {
   const targetCalories = Math.round(tdee + goalAdjustments[profile.goal]);
 
   // Macro split (Balanced: 30% Protein, 40% Carbs, 30% Fat)
-  // 1g Protein = 4 kcal, 1g Carbs = 4 kcal, 1g Fat = 9 kcal
   
   return {
-    calories: 0, // Current
+    calories: 0,
     protein: 0,
     carbs: 0,
     fat: 0,
+    fiber: 0,
+    sugar: 0,
+    saturatedFat: 0,
     goalCalories: targetCalories,
     goalProtein: Math.round((targetCalories * 0.3) / 4),
     goalCarbs: Math.round((targetCalories * 0.4) / 4),
-    goalFat: Math.round((targetCalories * 0.3) / 9)
+    goalFat: Math.round((targetCalories * 0.3) / 9),
+    goalFiber: 30, // General recommendation
+    goalSugar: Math.round((targetCalories * 0.1) / 4), // Max 10% of energy from added sugars
+    goalSaturatedFat: Math.round((targetCalories * 0.1) / 9) // Max 10% of energy
   };
 };
